@@ -2,6 +2,9 @@
 - name: install clang
   hosts: development_hosts
   become: yes
+  roles:
+     - role: ansiblebit.oracle-java
+       oracle_java_set_as_default: yes
 
   vars_prompt:
   - name: "ansible_sudo_pass"

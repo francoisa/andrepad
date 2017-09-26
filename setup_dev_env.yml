@@ -1,0 +1,70 @@
+---
+- name: install clang
+  hosts: development_hosts
+  become: yes
+
+  vars_prompt:
+  - name: "ansible_sudo_pass"
+    prompt: "Enter password"
+    private: yes
+
+  tasks:
+  - name: install clang
+    apt: name=clang state=latest
+
+  - name: install clang-format
+    apt: name=clang-format state=latest
+
+  - name: install clang-tidy
+    apt: name=clang-tidy state=latest
+
+  - name: install libclang1
+    apt: name=libclang1 state=latest
+
+  - name: install lldb
+    apt: name=lldb state=latest
+
+  - name: install llvm
+    apt: name=llvm state=latest
+
+  - name: install llvm-dev
+    apt: name=llvm-dev state=latest
+
+  - name: install llvm-runtime
+    apt: name=llvm-runtime state=latest
+
+  - name: install cmake
+    apt: name=cmake state=latest
+
+  - name: install emacs
+    apt: name=emacs state=latest
+
+  - name: install gvim
+    apt: name=vim state=latest
+
+  - name: install node
+    apt: name=nodejs state=latest
+
+  - name: install npm
+    apt: name=npm state=latest
+
+  - name: install aptitude
+    apt: name=aptitude state=latest
+
+  - name: add Atom repo
+    apt_repository: repo=ppa:webupd8team/atom
+
+  - name: update packages
+    apt: upgrade=full
+
+  - name: install atom
+    apt: name=atom state=latest
+
+  - name: add Oracle JDK repo
+    apt_repository: repo=ppa:webupd8team/java
+
+  - name: Update packages
+    apt: upgrade=full
+
+  - name: install maven
+    apt: name=maven state=latest

@@ -45,11 +45,16 @@
   - name: install gvim
     apt: name=vim state=latest
 
-  - name: install node
-    apt: name=nodejs state=latest
+  - name: add apt key for nodesource
+    apt_key: url=https://deb.nodesource.com/gpgkey/nodesource.gpg.key
 
-  - name: install npm
-    apt: name=npm state=latest
+  - name: add repo for nodesource
+    apt_repository:
+          repo: 'deb https://deb.nodesource.com/node_8.x {{ ansible_distribution_release }} main'
+          update_cache: yes
+
+  - name: install nodejs
+    apt: name=nodejs
 
   - name: install aptitude
     apt: name=aptitude state=latest

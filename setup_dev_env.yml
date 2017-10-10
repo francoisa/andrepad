@@ -1,5 +1,5 @@
 ---
-- name: install clang
+- name: setup s/w development machine
   hosts: development_hosts
   become: yes
   roles:
@@ -11,7 +11,17 @@
     prompt: "Enter password"
     private: yes
 
+  vars:
+    - apt_file: /etc/apt/sources.list.d/google-chrome.list
+    - user: francoisa
+
   tasks:
+  - name: update packages
+    apt: upgrade=full
+    notify:
+       - reboot
+       - waiting
+
   - name: install clang
     apt: name=clang state=latest
 
@@ -62,17 +72,59 @@
   - name: add Atom repo
     apt_repository: repo=ppa:webupd8team/atom
 
-  - name: update packages
-    apt: upgrade=full
-
   - name: install atom
     apt: name=atom state=latest
 
   - name: add Oracle JDK repo
     apt_repository: repo=ppa:webupd8team/java
 
-  - name: Update packages
-    apt: upgrade=full
-
   - name: install maven
     apt: name=maven state=latest
+
+  - name: does the Google apt file exist?
+    command: test -f {{apt_file}}
+    register: google_apt_exists
+    ignore_errors: True
+
+  - name: add Google Chrome key
+    shell: wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | apt-key add -
+    when: google_apt_exists.rc == 1
+
+  - name: add Google Chrome repo
+    copy: content="deb http://dl.google.com/linux/chrome/deb/ stable main" dest={{apt_file}} owner=root group=root mode=644
+    when: google_apt_exists.rc == 1
+
+  - name: update apt cache
+    apt: update_cache=yes
+    when: google_apt_exists.rc == 1
+
+  - name: install google chrome
+    apt: pkg=google-chrome-stable state=installed
+
+  - name: install xrdp
+    apt: pkg=xrdp state=present
+
+  - name: copy .xsession file over
+    copy: src=.xsession dest="/home/{{user}}/.xsession" owner={{user}} group={{user}}
+
+  - name: restart xrdp
+    service: name=xrdp state=restarted
+
+  - name: add repo for sqlite browser
+    apt_repository:
+          repo: 'ppa:linuxgndu/sqlitebrowser'
+          update_cache: yes
+
+  - name: install sqlite browser
+    apt: pkg=sqlitebrowser state=latest
+
+  handlers:
+  - name: reboot
+    shell: sleep 2 && shutdown -r now "Ansible updates triggered"
+    async: 1
+    poll: 0
+    ignore_errors: true
+
+  - name: waiting
+    local_action: wait_for host={{ inventory_hostname }} port=22 delay=1 timeout=300
+    become: false
